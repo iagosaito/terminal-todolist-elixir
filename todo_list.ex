@@ -2,8 +2,6 @@ defmodule TodoList do
 
     defstruct auto_id: 1, entries: %{} 
 
-    def new(), do: %TodoList{}
-
     def new(entries \\ []) do
         Enum.reduce(
             entries,
@@ -48,4 +46,25 @@ defmodule TodoList do
             Stream.filter(fn {_, entry} -> entry.date == date end) |>
             Enum.map(fn {_, entry} -> entry end)
     end
+end
+
+defmodule TodoList.CsvImporter do
+   def import(path) do
+       File.stream!(path) 
+        |> Enum.map(&String.replace(&1, "\n", ""))
+        |> Enum.map(&String.split(&1, ","))
+        |> Enum.map(fn todo -> 
+            [string_date, title] = todo 
+            
+            [year, month, day] = 
+                String.split(string_date, "/") 
+                |> Enum.map(&String.to_integer/1)
+
+            {:ok, date} = Date.new(year, month, day)
+
+            %{date: date, title: title}
+        end) 
+
+        |> TodoList.new()
+   end 
 end

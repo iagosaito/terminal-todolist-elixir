@@ -48,11 +48,22 @@ end
 
 defmodule TodoList.CsvImporter do
   def import(path) do
-    File.stream!(path)
+    path 
+    |> read_lines
+    |> parse_entries
+    |> evaluate
+  end
+
+  defp read_lines(filename) do
+    filename
+    |> File.stream!
     |> Enum.map(&String.replace(&1, "\n", ""))
+  end
+
+  defp parse_entries(line) do
+    line
     |> Enum.map(&String.split(&1, ","))
     |> Enum.map(&create_entry(&1))
-    |> evaluate()
   end
 
   defp create_entry([string_date, title]) do
